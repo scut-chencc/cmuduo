@@ -1,0 +1,6 @@
+digraph GG {
+node [
+  fontsize = "12"
+];
+    "node15" [ label="countdownlatch_test2" shape="house"];
+}

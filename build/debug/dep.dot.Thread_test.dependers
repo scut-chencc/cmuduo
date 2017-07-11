@@ -1,0 +1,6 @@
+digraph GG {
+node [
+  fontsize = "12"
+];
+    "node4" [ label="Thread_test" shape="house"];
+}
