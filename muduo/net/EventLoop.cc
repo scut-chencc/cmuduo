@@ -1,12 +1,4 @@
-﻿// Copyright 2010, Shuo Chen.  All rights reserved.
-// http://code.google.com/p/muduo/
-//
-// Use of this source code is governed by a BSD-style license
-// that can be found in the License file.
-
-// Author: Shuo Chen (chenshuo at chenshuo dot com)
-
-#include <muduo/net/EventLoop.h>
+﻿#include <muduo/net/EventLoop.h>
 
 #include <muduo/base/Logging.h>
 #include <muduo/net/Channel.h>
@@ -25,7 +17,7 @@ namespace
 {
 // 当前线程EventLoop对象指针
 // 线程局部存储
-__thread EventLoop* t_loopInThisThread = 0;
+__thread EventLoop* t_loopInThisThread = 0;//每个线程都有一个指针变量；
 
 const int kPollTimeMs = 10000;
 
