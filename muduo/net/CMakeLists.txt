@@ -1,4 +1,4 @@
-set(net_SRCS
+﻿set(net_SRCS
   Acceptor.cc
   Buffer.cc
   Channel.cc
@@ -20,10 +20,10 @@ set(net_SRCS
   TimerQueue.cc
   )
 
-add_library(muduo_net ${net_SRCS})
-target_link_libraries(muduo_net muduo_base)
+add_library(muduo_net ${net_SRCS})#上面那么多文件编译生成一个库muduo_net
+target_link_libraries(muduo_net muduo_base)#依赖于muduo基础库
 
-install(TARGETS muduo_net DESTINATION lib)
+install(TARGETS muduo_net DESTINATION lib)#安装的话把一些头文件安装过去，把头文件安装到相应目录
 set(HEADERS
   Acceptor.h
   Buffer.h
@@ -40,7 +40,7 @@ set(HEADERS
   )
 install(FILES ${HEADERS} DESTINATION include/muduo/net)
 
-add_subdirectory(http)
+add_subdirectory(http)#添加子目录
 add_subdirectory(inspect)
 #
 if(NOT CMAKE_BUILD_NO_EXAMPLES)
