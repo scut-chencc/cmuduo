@@ -85,7 +85,7 @@ void EventLoop::loop()
   quit_ = false;
   LOG_TRACE << "EventLoop " << this << " start looping";
 
-  //::poll(NULL, 0, 5*1000);
+  //::poll(NULL, 0, 5*1000);//关注事件0,仅仅等待5秒超时
   while (!quit_)
   {
     activeChannels_.clear();
