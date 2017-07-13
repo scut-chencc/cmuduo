@@ -1,4 +1,4 @@
-#ifndef MUDUO_NET_EVENTLOOP_H
+﻿#ifndef MUDUO_NET_EVENTLOOP_H
 #define MUDUO_NET_EVENTLOOP_H
 
 #include <vector>
@@ -107,11 +107,11 @@ class EventLoop : boost::noncopyable
   typedef std::vector<Channel*> ChannelList;
   
   bool looping_; /* atomic */
-  bool quit_; /* atomic */
-  bool eventHandling_; /* atomic */
+  bool quit_; /* atomic 是否退出loop*/
+  bool eventHandling_; /* atomic 当前是否处于事件处理状态*/
   bool callingPendingFunctors_; /* atomic */
   const pid_t threadId_;		// 当前对象所属线程ID
-  Timestamp pollReturnTime_;
+  Timestamp pollReturnTime_;//调用poll所返回的时间
   boost::scoped_ptr<Poller> poller_;
   boost::scoped_ptr<TimerQueue> timerQueue_;
   int wakeupFd_;				// 用于eventfd
