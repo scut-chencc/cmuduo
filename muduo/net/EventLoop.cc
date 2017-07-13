@@ -17,7 +17,7 @@ namespace
 {
 // 当前线程EventLoop对象指针
 // 线程局部存储
-__thread EventLoop* t_loopInThisThread = 0;//每个线程都有一个指针变量;
+__thread EventLoop* t_loopInThisThread = 0;//每个线程都有一个指针变量;;
 
 const int kPollTimeMs = 10000;
 
