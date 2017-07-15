@@ -27,7 +27,7 @@ install(TARGETS muduo_net DESTINATION lib)#安装的话把一些头文件安装�
 set(HEADERS
   Acceptor.h
   Buffer.h
-  Channel.h
+  Channel.h#为了方便回调（外部使用），设置为外部类
   Endian.h
   EventLoop.h
   EventLoopThread.h
