@@ -1,4 +1,4 @@
-// Copyright 2010, Shuo Chen.  All rights reserved.
+﻿// Copyright 2010, Shuo Chen.  All rights reserved.
 // http://code.google.com/p/muduo/
 //
 // Use of this source code is governed by a BSD-style license
@@ -110,7 +110,7 @@ TimerQueue::~TimerQueue()
   for (TimerList::iterator it = timers_.begin();
       it != timers_.end(); ++it)
   {
-    delete it->second;
+    delete it->second;//只要释放一次即可
   }
 }
 
@@ -139,7 +139,7 @@ void TimerQueue::cancel(TimerId timerId)
 void TimerQueue::addTimerInLoop(Timer* timer)
 {
   loop_->assertInLoopThread();
-  // 插入一个定时器，有可能会使得最早到期的定时器发生改变（插入的最早到期）
+  // 插入一个定时器，有可能会使得最早到期的定时器发生改变（插入的是最早到期）
   bool earliestChanged = insert(timer);
 
   if (earliestChanged)
@@ -149,7 +149,7 @@ void TimerQueue::addTimerInLoop(Timer* timer)
   }
 }
 
-void TimerQueue::cancelInLoop(TimerId timerId)
+void TimerQueue::cancelInLoop(TimerId timerId)//timerId外部类
 {
   loop_->assertInLoopThread();
   assert(timers_.size() == activeTimers_.size());
@@ -177,7 +177,7 @@ void TimerQueue::handleRead()
   Timestamp now(Timestamp::now());
   readTimerfd(timerfd_, now);		// 清除该事件，避免一直触发
 
-  // 获取该时刻之前所有的定时器列表(即超时定时器列表)(只关注第一个定时器，如果后面的定时器跟它的时间一样，都超时了)
+  // 获取该时刻之前所有的定时器列表(即超时定时器列表)(只关注第一个定时器，如果后面的定时器跟它的时间一样，表明都超时了)
   std::vector<Entry> expired = getExpired(now);
 
   callingExpiredTimers_ = true;
@@ -191,11 +191,13 @@ void TimerQueue::handleRead()
   }
   callingExpiredTimers_ = false;
 
-  // 不是一次性定时器，需要重启
+  // 不是一次性定时器，需要重启(因为刚才已经从timers_移除了)
   reset(expired, now);
 }
 
 // rvo优化，返回值没有拷贝构造，性能不是问题
+//如果没有rvo优化的话，这里返回要调用拷贝构造函数，rvo优化直接把该对象expired返回回去，相当于这个对象被提升了
+//提升成不是一个局部对象
 std::vector<TimerQueue::Entry> TimerQueue::getExpired(Timestamp now)
 {
   assert(timers_.size() == activeTimers_.size());
@@ -243,7 +245,7 @@ void TimerQueue::reset(const std::vector<Entry>& expired, Timestamp now)
     {
       // 一次性定时器或者已被取消的定时器是不能重置的，因此删除该定时器
       // FIXME move to a free list
-      delete it->second; // FIXME: no delete please
+      delete it->second; // FIXME: no delete please 
     }
   }
 
@@ -267,7 +269,7 @@ bool TimerQueue::insert(Timer* timer)//也只能在IO线程中调用
   // 最早到期时间是否改变
   bool earliestChanged = false;
   Timestamp when = timer->expiration();
-  TimerList::iterator it = timers_.begin();
+  TimerList::iterator it = timers_.begin();//timers_ set实现，默认时间戳从小到大排序
   // 如果timers_为空或者when小于timers_中的最早到期时间
   if (it == timers_.end() || when < it->first)
   {

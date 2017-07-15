@@ -91,7 +91,7 @@ class Channel : boost::noncopyable
   const int  fd_;			// 文件描述符，但不负责关闭该文件描述符
   int        events_;		// 关注的事件
   int        revents_;		// poll/epoll返回的事件
-  int        index_;		// used by Poller.表示在poll的事件数组中的序号
+  int        index_;		// used by Poller.表示在poll的事件数组中的序号,epoll表示通道的状态
   bool       logHup_;		// for POLLHUP
 
   boost::weak_ptr<void> tie_;

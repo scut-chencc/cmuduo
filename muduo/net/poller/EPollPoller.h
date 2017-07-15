@@ -1,4 +1,4 @@
-// Copyright 2010, Shuo Chen.  All rights reserved.
+﻿// Copyright 2010, Shuo Chen.  All rights reserved.
 // http://code.google.com/p/muduo/
 //
 // Use of this source code is governed by a BSD-style license
@@ -44,7 +44,7 @@ class EPollPoller : public Poller
   void update(int operation, Channel* channel);
 
   typedef std::vector<struct epoll_event> EventList;
-  typedef std::map<int, Channel*> ChannelMap;
+  typedef std::map<int, Channel*> ChannelMap;//fd和channel
 
   int epollfd_;
   EventList events_;

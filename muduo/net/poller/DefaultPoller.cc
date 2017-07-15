@@ -1,4 +1,4 @@
-// Copyright 2010, Shuo Chen.  All rights reserved.
+﻿// Copyright 2010, Shuo Chen.  All rights reserved.
 // http://code.google.com/p/muduo/
 //
 // Use of this source code is governed by a BSD-style license
@@ -16,7 +16,7 @@ using namespace muduo::net;
 
 Poller* Poller::newDefaultPoller(EventLoop* loop)
 {
-  if (::getenv("MUDUO_USE_POLL"))
+  if (::getenv("MUDUO_USE_POLL"))//看环境变量是否使用poll
   {
     return new PollPoller(loop);
   }
