@@ -114,11 +114,11 @@ class EventLoop : boost::noncopyable
   Timestamp pollReturnTime_;//调用poll所返回的时间
   boost::scoped_ptr<Poller> poller_;
   boost::scoped_ptr<TimerQueue> timerQueue_;
-  int wakeupFd_;				// 用于eventfd
+  int wakeupFd_;				// 用于eventfd(保存eventfd创建的文件描述符)
   // unlike in TimerQueue, which is an internal class,
   // we don't expose Channel to client.
   boost::scoped_ptr<Channel> wakeupChannel_;	//该通道将会纳入poller_来管理，eventloop销毁，这个也跟着销毁
-												//这里不一样的是组合关系，跟前面的聚合关系不一样；
+												//这里不一样的是这里是组合关系，跟前面的聚合关系不一样；
   ChannelList activeChannels_;		// Poller返回的活动通道，其中有timerQueue_,由TimerQueue负责；
   Channel* currentActiveChannel_;	// 当前正在处理的活动通道
   MutexLock mutex_;

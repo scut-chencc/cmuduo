@@ -117,7 +117,7 @@ void EventLoop::loop()
 void EventLoop::quit()
 {
   quit_ = true;
-  if (!isInLoopThread())//如果退出不是当前IO线程调用的
+  if (!isInLoopThread())//如果退出不是当前IO线程(eventloop所属线程)调用的
   {
     wakeup();//唤醒这个IO线程
   }
@@ -213,7 +213,7 @@ void EventLoop::wakeup()//一个线程可以唤醒另一个线程
   }
 }
 
-void EventLoop::handleRead()
+void EventLoop::handleRead()//wakeupChannel_有事件产生的回调函数
 {
   uint64_t one = 1;
   //ssize_t n = sockets::read(wakeupFd_, &one, sizeof one);
