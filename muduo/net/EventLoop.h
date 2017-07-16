@@ -122,7 +122,7 @@ class EventLoop : boost::noncopyable
   ChannelList activeChannels_;		// Poller返回的活动通道，其中有timerQueue_,由TimerQueue负责；
   Channel* currentActiveChannel_;	// 当前正在处理的活动通道
   MutexLock mutex_;
-  std::vector<Functor> pendingFunctors_; // @BuardedBy mutex_
+  std::vector<Functor> pendingFunctors_; // @BuardedBy mutex_//是个回调任务
 };
 
 }

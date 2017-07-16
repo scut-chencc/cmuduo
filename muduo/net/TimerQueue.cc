@@ -119,9 +119,9 @@ TimerId TimerQueue::addTimer(const TimerCallback& cb,
                              double interval)
 {
   Timer* timer = new Timer(cb, when, interval);
-  
-  loop_->runInLoop(
-      boost::bind(&TimerQueue::addTimerInLoop, this, timer));//线程安全
+  //线程安全的异步调用，其他线程可以调用
+  loop_->runInLoop(//再不用锁的情况下保证线程安全
+      boost::bind(&TimerQueue::addTimerInLoop, this, timer));//线程安全，交给loop_所在的io线程处理，这样addTimerInLoop函数就不用加锁啦
 	  
   //addTimerInLoop(timer);//线程不安全
   return TimerId(timer, timer->sequence());

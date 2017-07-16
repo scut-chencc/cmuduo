@@ -106,7 +106,7 @@ void EventLoop::loop()
     }
     currentActiveChannel_ = NULL;
     eventHandling_ = false;
-    doPendingFunctors();
+    doPendingFunctors();//这里没有循环PendingFunctors直到为空，为了避免死循环
   }
 
   LOG_TRACE << "EventLoop " << this << " stop looping";
