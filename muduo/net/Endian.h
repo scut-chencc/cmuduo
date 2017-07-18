@@ -30,12 +30,12 @@ namespace sockets
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 inline uint64_t hostToNetwork64(uint64_t host64)
 {
-  return htobe64(host64);
+  return htobe64(host64);//host to big end//主机到网络，小端到大端
 }
 
 inline uint32_t hostToNetwork32(uint32_t host32)
 {
-  return htobe32(host32);
+  return htobe32(host32);//htonl也可以
 }
 
 inline uint16_t hostToNetwork16(uint16_t host16)

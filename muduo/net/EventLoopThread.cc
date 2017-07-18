@@ -19,7 +19,7 @@ using namespace muduo::net;
 EventLoopThread::EventLoopThread(const ThreadInitCallback& cb)
   : loop_(NULL),
     exiting_(false),
-    thread_(boost::bind(&EventLoopThread::threadFunc, this)),//指定的回调函数threadFunc，并且把自身对象EventLoopThread传递到threadFunc当中
+    thread_(boost::bind(&EventLoopThread::threadFunc, this)),
     mutex_(),
     cond_(mutex_),
     callback_(cb)
@@ -33,11 +33,10 @@ EventLoopThread::~EventLoopThread()
   thread_.join();
 }
 
-EventLoop* EventLoopThread::startLoop()//启动之后就为IO线程
+EventLoop* EventLoopThread::startLoop()
 {
-  assert(!thread_.started());//假设线程还没有启动
-  thread_.start();//启动线程，启动后线程函数就运行起来了(调用了绑定的回调函数，即threadFunc回调函数）,
-					//这里就有两个线程，然后startLoop()接下去的部分和threadFunc()的执行顺序是不确定的，所以这里用了个条件变量在等待
+  assert(!thread_.started());
+  thread_.start();
 
   {
     MutexLockGuard lock(mutex_);
@@ -56,14 +55,16 @@ void EventLoopThread::threadFunc()
 
   if (callback_)
   {
-    callback_(&loop);//调用回调函数，初始化
+    callback_(&loop);//回调函数
   }
 
   {
     MutexLockGuard lock(mutex_);
     // loop_指针指向了一个栈上的对象，threadFunc函数退出之后，这个指针就失效了
-    // threadFunc函数退出，就意味着线程退出了，（线程对象）EventLoopThread对象也就没有存在的价值了。
+    // threadFunc函数退出，就意味着线程退出了，EventLoopThread对象（线程对象）也就没有存在的价值了。
     // 因而不会有什么大的问题
+	//muduo没有实现退出自动delete，但是muduo设计线程池的大小是固定的，这些线程与整个程序的生命周期是一样的
+	//threadFunc函数退出，就意味着线程退出了
     loop_ = &loop;
     cond_.notify();
   }

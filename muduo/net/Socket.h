@@ -28,14 +28,14 @@ class InetAddress;
 ///
 /// It closes the sockfd when desctructs.
 /// It's thread safe, all operations are delagated to OS.
-class Socket : boost::noncopyable
+class Socket : boost::noncopyable//文件描述符对应一些资源不能被拷贝
 {
  public:
   explicit Socket(int sockfd)
-    : sockfd_(sockfd)
+    : sockfd_(sockfd)//文件描述符必须是创建好的
   { }
 
-  // Socket(Socket&&) // move constructor in C++11
+  // Socket(Socket&&) // move constructor in C++11//移动语义构造，使用右值引用
   ~Socket();
 
   int fd() const { return sockfd_; }
@@ -56,7 +56,7 @@ class Socket : boost::noncopyable
   ///
   /// Enable/disable TCP_NODELAY (disable/enable Nagle's algorithm).
   ///
-  // Nagle算法可以一定程度上避免网络拥塞
+  // Nagle算法可以一定程度上避免网络拥塞（Nagle小的包合并才发送）
   // TCP_NODELAY选项可以禁用Nagle算法
   // 禁用Nagle算法，可以避免连续发包出现延迟，这对于编写低延迟的网络服务很重要
   void setTcpNoDelay(bool on);

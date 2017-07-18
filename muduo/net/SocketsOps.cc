@@ -30,6 +30,7 @@ typedef struct sockaddr SA;//通用地址
 const SA* sockaddr_cast(const struct sockaddr_in* addr/*网际地址*/)
 {
   return static_cast<const SA*>(implicit_cast<const void*>(addr));
+  //先隐含转换成const无类型指针，再转化成SA类型
 }
 
 SA* sockaddr_cast(struct sockaddr_in* addr)
@@ -109,7 +110,7 @@ int sockets::accept(int sockfd, struct sockaddr_in* addr)
   if (connfd < 0)
   {
     int savedErrno = errno;
-    LOG_SYSERR << "Socket::accept";
+    LOG_SYSERR << "Socket::accept";//系统日志的系统调用可能更改errno的值，所以先保存
     switch (savedErrno)
     {
       case EAGAIN:
