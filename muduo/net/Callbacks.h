@@ -56,7 +56,7 @@ typedef boost::function<void (const TcpConnectionPtr&,
 
 void defaultConnectionCallback(const TcpConnectionPtr& conn);
 void defaultMessageCallback(const TcpConnectionPtr& conn,
-                            Buffer* buffer,
+                            Buffer* buffer,//应用层的缓冲区
                             Timestamp receiveTime);
 							
 /*typedef boost::function<void (const TcpConnectionPtr&,

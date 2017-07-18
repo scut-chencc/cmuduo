@@ -38,7 +38,7 @@ class Socket;
 ///
 /// This is an interface class, so don't expose too much details.
 class TcpConnection : boost::noncopyable,
-                      public boost::enable_shared_from_this<TcpConnection>
+                      public boost::enable_shared_from_this<TcpConnection>//跟tcpconnection的生存期管理有关系
 {
  public:
   /// Constructs a TcpConnection with a connected sockfd

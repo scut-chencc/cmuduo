@@ -303,7 +303,7 @@ void TcpConnection::handleRead(Timestamp receiveTime)
   ssize_t n = inputBuffer_.readFd(channel_->fd(), &savedErrno);
   if (n > 0)
   {
-    messageCallback_(shared_from_this(), &inputBuffer_, receiveTime);
+    messageCallback_(shared_from_this(), &inputBuffer_, receiveTime);//把当前对象的裸指针转化为share_ptr传递进去
   }
   else if (n == 0)
   {

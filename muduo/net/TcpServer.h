@@ -42,8 +42,8 @@ class TcpServer : boost::noncopyable
             const string& nameArg);
   ~TcpServer();  // force out-line dtor, for scoped_ptr members.
 
-  const string& hostport() const { return hostport_; }
-  const string& name() const { return name_; }
+  const string& hostport() const { return hostport_; } //返回服务端口
+  const string& name() const { return name_; } //返回服务名称
 
   /// Set the number of threads for handling input.
   ///
@@ -85,7 +85,7 @@ class TcpServer : boost::noncopyable
 
  private:
   /// Not thread safe, but in loop
-  void newConnection(int sockfd, const InetAddress& peerAddr);
+  void newConnection(int sockfd, const InetAddress& peerAddr);//连接到来会回调的函数
   /// Thread safe.
   void removeConnection(const TcpConnectionPtr& conn);
   /// Not thread safe, but in loop
@@ -93,13 +93,13 @@ class TcpServer : boost::noncopyable
 
   typedef std::map<string, TcpConnectionPtr> ConnectionMap;
 
-  EventLoop* loop_;  // the acceptor loop
+  EventLoop* loop_;  // the acceptor loop，accept所属的eventloop
   const string hostport_;		// 服务端口
   const string name_;			// 服务名
-  boost::scoped_ptr<Acceptor> acceptor_; // avoid revealing Acceptor
+  boost::scoped_ptr<Acceptor> acceptor_; // avoid revealing Acceptor//有这个accept，就有创建套接字，绑定监听的功能
   boost::scoped_ptr<EventLoopThreadPool> threadPool_;
-  ConnectionCallback connectionCallback_;
-  MessageCallback messageCallback_;
+  ConnectionCallback connectionCallback_;//连接到来的回调函数
+  MessageCallback messageCallback_;//消息到来的回调函数
   WriteCompleteCallback writeCompleteCallback_;		// 数据发送完毕，会回调此函数
   ThreadInitCallback threadInitCallback_;	// IO线程池中的线程在进入事件循环前，会回调用此函数
   bool started_;

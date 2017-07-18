@@ -72,11 +72,11 @@ void TcpServer::start()
 	threadPool_->start(threadInitCallback_);
   }
 
-  if (!acceptor_->listenning())
+  if (!acceptor_->listenning())//仅仅第一次调用才会执行下面的
   {
-	// get_pointer返回原生指针
+	// acceptor_是智能指针，get_pointer返回原生指针
     loop_->runInLoop(
-        boost::bind(&Acceptor::listen, get_pointer(acceptor_)));
+        boost::bind(&Acceptor::listen, get_pointer(acceptor_)));//通过原生指针调用listen函数
   }
 }
 
