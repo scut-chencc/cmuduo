@@ -25,9 +25,9 @@ using namespace muduo::net;
 Acceptor::Acceptor(EventLoop* loop, const InetAddress& listenAddr)
   : loop_(loop),
     acceptSocket_(sockets::createNonblockingOrDie()),
-    acceptChannel_(loop, acceptSocket_.fd()),
+    acceptChannel_(loop, acceptSocket_.fd()),//关注这个套接字的事件
     listenning_(false),
-    idleFd_(::open("/dev/null", O_RDONLY | O_CLOEXEC))
+    idleFd_(::open("/dev/null", O_RDONLY | O_CLOEXEC))//预先准备一个空闲的文件描述符
 {
   assert(idleFd_ >= 0);
   acceptSocket_.setReuseAddr(true);
@@ -75,10 +75,10 @@ void Acceptor::handleRead()
     // Read the section named "The special problem of
     // accept()ing when you can't" in libev's doc.
     // By Marc Lehmann, author of livev.
-    if (errno == EMFILE)
+    if (errno == EMFILE)//太多文件描述符了
     {
       ::close(idleFd_);
-      idleFd_ = ::accept(acceptSocket_.fd(), NULL, NULL);
+      idleFd_ = ::accept(acceptSocket_.fd(), NULL, NULL);//接收，避免电平触发一直触发
       ::close(idleFd_);
       idleFd_ = ::open("/dev/null", O_RDONLY | O_CLOEXEC);
     }
