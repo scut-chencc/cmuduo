@@ -246,7 +246,7 @@ void TcpConnection::connectEstablished()
 void TcpConnection::connectDestroyed()
 {
   loop_->assertInLoopThread();
-  if (state_ == kConnected)
+  if (state_ == kConnected)//在handleClose()中已经调用了TcpServer::removeConnection(),所以这里的条件不成立
   {
     setState(kDisconnected);
     channel_->disableAll();
@@ -369,7 +369,7 @@ void TcpConnection::handleClose()
   LOG_TRACE << "fd = " << channel_->fd() << " state = " << state_;
   assert(state_ == kConnected || state_ == kDisconnecting);
   // we don't close fd, leave it to dtor, so we can find leaks easily.
-  setState(kDisconnected);
+  setState(kDisconnected);//connectionCallback_(guardThis);每调用的话这行也不该调用
   channel_->disableAll();
 
   TcpConnectionPtr guardThis(shared_from_this());
