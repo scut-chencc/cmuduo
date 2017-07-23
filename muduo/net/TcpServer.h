@@ -93,7 +93,7 @@ class TcpServer : boost::noncopyable
 
   typedef std::map<string, TcpConnectionPtr> ConnectionMap;
 
-  EventLoop* loop_;  // the acceptor loop，accept所属的eventloop
+  EventLoop* loop_;  // the acceptor loop，accept所属的eventloop（mainReactor)
   const string hostport_;		// 服务端口
   const string name_;			// 服务名
   boost::scoped_ptr<Acceptor> acceptor_; // avoid revealing Acceptor//有这个accept，就有创建套接字，绑定监听的功能

@@ -44,9 +44,11 @@ class EventLoopThreadPool : boost::noncopyable
   EventLoop* baseLoop_;	// 与Acceptor所属EventLoop相同
   bool started_;
   int numThreads_;		// 线程数
-  int next_;			// 新连接到来，所选择的EventLoop对象下标
-  boost::ptr_vector<EventLoopThread> threads_;		// IO线程列表
-  std::vector<EventLoop*> loops_;					// EventLoop列表
+  int next_;			// 新连接到来，所选择的EventLoop对象下标（公平选择一个线程处理）
+  boost::ptr_vector<EventLoopThread> threads_;		// IO线程列表,用ptr对象管理，当ptr销毁的时候，他管理的
+													//eventloopthread对象也跟着销毁
+  std::vector<EventLoop*> loops_;					// EventLoop列表，一个io线程对应一个eventloop对象，这些对象是栈上
+													//对象，不需要用来销毁
 };
 
 }

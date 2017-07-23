@@ -42,11 +42,12 @@ void EventLoopThreadPool::start(const ThreadInitCallback& cb)
     EventLoopThread* t = new EventLoopThread(cb);
     threads_.push_back(t);
     loops_.push_back(t->startLoop());	// 启动EventLoopThread线程，在进入事件循环之前，会调用cb
+										//（并且把返回的eventloop的对象指针压入到loops_) 
   }
   if (numThreads_ == 0 && cb)
   {
     // 只有一个EventLoop，在这个EventLoop进入事件循环之前，调用cb
-    cb(baseLoop_);
+    cb(baseLoop_);//baseloop_在进入事件循环之前先调用cb
   }
 }
 
@@ -57,7 +58,7 @@ EventLoop* EventLoopThreadPool::getNextLoop()//连接到来时，选择一个eve
 
   // 如果loops_为空，则loop指向baseLoop_
   // 如果不为空，按照round-robin（RR，轮叫）的调度方式选择一个EventLoop
-  if (!loops_.empty())
+  if (!loops_.empty())//loops_为空的话，条件不成立
   {
     // round-robin
     loop = loops_[next_];

@@ -59,7 +59,7 @@ TcpServer::~TcpServer()
 void TcpServer::setThreadNum(int numThreads)
 {
   assert(0 <= numThreads);
-  threadPool_->setThreadNum(numThreads);
+  threadPool_->setThreadNum(numThreads);//不包含主的io线程
 }
 
 // 该函数多次调用是无害的
@@ -69,7 +69,7 @@ void TcpServer::start()
   if (!started_)
   {
     started_ = true;
-	threadPool_->start(threadInitCallback_);
+	threadPool_->start(threadInitCallback_);//启动线程池，参数是回调函数
   }
 
   if (!acceptor_->listenning())//仅仅第一次调用才会执行下面的
@@ -102,7 +102,8 @@ void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
                                           localAddr,
                                           peerAddr));*/
 
-  TcpConnectionPtr conn(new TcpConnection(ioLoop,
+  TcpConnectionPtr conn(new TcpConnection(ioLoop,//如果选择主线程的loop对象loop_处理这个连接
+//在运行ioLoop->runInLoop(boost::bind(&TcpConnection::connectEstablished, conn));就会出现问题（不是同一个loop)
                                           connName,
                                           sockfd,
                                           localAddr,
@@ -118,9 +119,11 @@ void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
   conn->setCloseCallback(
       boost::bind(&TcpServer::removeConnection, this, _1));
 
-  // conn->connectEstablished();
-  ioLoop->runInLoop(boost::bind(&TcpConnection::connectEstablished, conn));
-  LOG_TRACE << "[5] usecount=" << conn.use_count();
+  // conn->connectEstablished();//直接调用在当前io线程调用
+  ioLoop->runInLoop(boost::bind(&TcpConnection::connectEstablished, conn));//主线程和ioLoop所在的线程不一样，所以
+											//加入到ioLoop所属的线程的待处理队列当中，wakeup ioLoop，让它处理
+  LOG_TRACE << "[5] usecount=" << conn.use_count();//（runInloop转到）让ioloop所属io线程调用（connectEstablished）
+													//不在当前io线程，把函数加入到队列当中
 
 }
 
