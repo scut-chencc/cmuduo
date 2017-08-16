@@ -74,7 +74,7 @@ TcpConnection::~TcpConnection()
 }
 
 // 线程安全，可以跨线程调用
-void TcpConnection::send(const void* data, size_t len)
+void TcpConnection::send(const void* data, size_t len)//tcpconnection所属的eventloop中
 {
   if (state_ == kConnected)
   {
@@ -85,7 +85,7 @@ void TcpConnection::send(const void* data, size_t len)
     else
     {
       string message(static_cast<const char*>(data), len);
-      loop_->runInLoop(
+      loop_->runInLoop(//跨线程调用有一定的开销，需要把这块缓冲区构造出来传递过去
           boost::bind(&TcpConnection::sendInLoop,
                       this,
                       message));
@@ -108,7 +108,7 @@ void TcpConnection::send(const StringPiece& message)
           boost::bind(&TcpConnection::sendInLoop,
                       this,
                       message.as_string()));
-                    //std::forward<string>(message)));
+                    //std::forward<string>(message)));//c++11版本也可以用这个
     }
   }
 }
@@ -163,7 +163,7 @@ void TcpConnection::sendInLoop(const void* data, size_t len)
     if (nwrote >= 0)
     {
       remaining = len - nwrote;
-	  // 写完了，回调writeCompleteCallback_
+	  // 写完了(都拷贝到了内存缓冲区)，回调writeCompleteCallback_
       if (remaining == 0 && writeCompleteCallback_)
       {
         loop_->queueInLoop(boost::bind(writeCompleteCallback_, shared_from_this()));
@@ -197,20 +197,20 @@ void TcpConnection::sendInLoop(const void* data, size_t len)
       loop_->queueInLoop(boost::bind(highWaterMarkCallback_, shared_from_this(), oldLen + remaining));
     }
     outputBuffer_.append(static_cast<const char*>(data)+nwrote, remaining);//未发送的起始位置和未发送量
-    if (!channel_->isWriting())//这时outputBuffer_有数据了
+    if (!channel_->isWriting())//这时outputBuffer_有数据了(因为remaining>0)
     {
-      channel_->enableWriting();		// 关注POLLOUT事件，当对等方接收了数据，内核发送缓冲区有空间后，pollout被触发；回调handleWrite();
+      channel_->enableWriting();		// 关注POLLOUT事件，当对等方接收了数据，内核发送缓冲区有空间后，pollout被触发；会回调handleWrite();
     }
   }
 }
 
 void TcpConnection::shutdown()
 {
-  // FIXME: use compare and swap
-  if (state_ == kConnected)
+  // FIXME: use compare and swap 可以用原子性操作
+  if (state_ == kConnected)//没有保护状态，可能有多个线程调用(调用一次）
   {
     setState(kDisconnecting);
-    // FIXME: shared_from_this()?
+    // FIXME: shared_from_this()?//先设置这个，下面不一定关闭连接
     loop_->runInLoop(boost::bind(&TcpConnection::shutdownInLoop, this));
   }
 }
@@ -218,10 +218,10 @@ void TcpConnection::shutdown()
 void TcpConnection::shutdownInLoop()
 {
   loop_->assertInLoopThread();
-  if (!channel_->isWriting())
+  if (!channel_->isWriting())//！还在关注pollout事件（outbuffer还有数据没发送完）
   {
     // we are not writing
-    socket_->shutdownWrite();
+    socket_->shutdownWrite();//关闭写的一半
   }
 }
 
@@ -258,7 +258,7 @@ void TcpConnection::connectDestroyed()
 
 void TcpConnection::handleRead(Timestamp receiveTime)
 {
-  /*
+  /*//第二个版本
   loop_->assertInLoopThread();
   int savedErrno = 0;
   ssize_t n = inputBuffer_.readFd(channel_->fd(), &savedErrno);
@@ -278,7 +278,7 @@ void TcpConnection::handleRead(Timestamp receiveTime)
   }
   */
 
-  /*
+  /*//刚开始最简单的版本
   loop_->assertInLoopThread();
   int savedErrno = 0;
   char buf[65536];
@@ -298,6 +298,7 @@ void TcpConnection::handleRead(Timestamp receiveTime)
     handleError();
   }
   */
+  //第三个版本
   loop_->assertInLoopThread();
   int savedErrno = 0;
   ssize_t n = inputBuffer_.readFd(channel_->fd(), &savedErrno);
@@ -305,7 +306,7 @@ void TcpConnection::handleRead(Timestamp receiveTime)
   {
     messageCallback_(shared_from_this(), &inputBuffer_, receiveTime);//把当前对象的裸指针转化为share_ptr传递进去
   }
-  else if (n == 0)
+  else if (n == 0)//(pollhup和)pollin同时成立，即服务端主动关闭连接，客户端判断到了（read=0)随之关闭连接，这里读取不到数据了
   {
     handleClose();
   }
@@ -321,7 +322,7 @@ void TcpConnection::handleRead(Timestamp receiveTime)
 void TcpConnection::handleWrite()
 {
   loop_->assertInLoopThread();
-  if (channel_->isWriting())
+  if (channel_->isWriting())//正处于关注pollout事件
   {
     ssize_t n = sockets::write(channel_->fd(),
                                outputBuffer_.peek(),
@@ -329,7 +330,7 @@ void TcpConnection::handleWrite()
     if (n > 0)
     {
       outputBuffer_.retrieve(n);//回收
-      if (outputBuffer_.readableBytes() == 0)	 // 发送缓冲区已清空
+      if (outputBuffer_.readableBytes() == 0)	 // (应用层)发送缓冲区已清空
       {
         channel_->disableWriting();		// 停止关注POLLOUT事件，以免出现busy loop
         if (writeCompleteCallback_)		// 回调writeCompleteCallback_
@@ -369,7 +370,7 @@ void TcpConnection::handleClose()
   LOG_TRACE << "fd = " << channel_->fd() << " state = " << state_;
   assert(state_ == kConnected || state_ == kDisconnecting);
   // we don't close fd, leave it to dtor, so we can find leaks easily.
-  setState(kDisconnected);//connectionCallback_(guardThis);每调用的话这行也不该调用
+  setState(kDisconnected);//connectionCallback_(guardThis);没调用的话这行也不该调用
   channel_->disableAll();
 
   TcpConnectionPtr guardThis(shared_from_this());

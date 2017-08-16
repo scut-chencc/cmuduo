@@ -23,20 +23,20 @@ const size_t Buffer::kCheapPrepend;
 const size_t Buffer::kInitialSize;
 
 // 结合栈上的空间，避免内存使用过大，提高内存使用率
-// 如果有5K个连接，每个连接就分配64K+64K的缓冲区的话，将占用640M内存，
+// 如果有5K个连接，每个连接（TCPconnection拥有的)就分配64K+64K的缓冲区的话，将占用640M内存(一开始就分配这么多的动态内存)
 // 而大多数时候，这些缓冲区的使用率很低
-ssize_t Buffer::readFd(int fd, int* savedErrno)
+ssize_t Buffer::readFd(int fd, int* savedErrno)//从套接字内核缓冲区读取数据添加到当前缓冲区
 {
   // saved an ioctl()/FIONREAD call to tell how much to read
   // 节省一次ioctl系统调用（获取有多少可读数据）
-  char extrabuf[65536];
+  char extrabuf[65536];//栈上空间
   struct iovec vec[2];
   const size_t writable = writableBytes();
   // 第一块缓冲区
   vec[0].iov_base = begin()+writerIndex_;
   vec[0].iov_len = writable;
   // 第二块缓冲区
-  vec[1].iov_base = extrabuf;
+  vec[1].iov_base = extrabuf;//指向栈上的空间
   vec[1].iov_len = sizeof extrabuf;
   const ssize_t n = sockets::readv(fd, vec, 2);
   if (n < 0)

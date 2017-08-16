@@ -57,7 +57,7 @@ class Buffer : public muduo::copyable
 
   // default copy-ctor, dtor and assignment are fine
 
-  void swap(Buffer& rhs)
+  void swap(Buffer& rhs)//不要拷贝，交换即可
   {
     buffer_.swap(rhs.buffer_);
     std::swap(readerIndex_, rhs.readerIndex_);
@@ -73,16 +73,16 @@ class Buffer : public muduo::copyable
   size_t prependableBytes() const
   { return readerIndex_; }
 
-  const char* peek() const
+  const char* peek() const//返回读的指针，开始读的位置
   { return begin() + readerIndex_; }
 
-  const char* findCRLF() const
+  const char* findCRLF() const//查找\r\n
   {
     const char* crlf = std::search(peek(), beginWrite(), kCRLF, kCRLF+2);
     return crlf == beginWrite() ? NULL : crlf;
   }
 
-  const char* findCRLF(const char* start) const
+  const char* findCRLF(const char* start) const//从这个位置开始查找
   {
     assert(peek() <= start);
     assert(start <= beginWrite());
@@ -102,11 +102,11 @@ class Buffer : public muduo::copyable
     }
     else
     {
-      retrieveAll();
+      retrieveAll();//readindex,writeIndex回到前面kCheapPrepend的位置
     }
   }
 
-  void retrieveUntil(const char* end)
+  void retrieveUntil(const char* end)//取回知道end位置
   {
     assert(peek() <= end);
     assert(end <= beginWrite());
@@ -142,8 +142,8 @@ class Buffer : public muduo::copyable
   string retrieveAsString(size_t len)
   {
     assert(len <= readableBytes());
-    string result(peek(), len);
-    retrieve(len);
+    string result(peek(), len);//数据保存到result当中
+    retrieve(len);//偏移过去
     return result;
   }
 
