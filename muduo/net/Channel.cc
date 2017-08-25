@@ -18,8 +18,8 @@ using namespace muduo;
 using namespace muduo::net;
 
 const int Channel::kNoneEvent = 0;
-const int Channel::kReadEvent = POLLIN | POLLPRI;
-const int Channel::kWriteEvent = POLLOUT;
+const int Channel::kReadEvent = POLLIN | POLLPRI;//=3
+const int Channel::kWriteEvent = POLLOUT;//=4
 
 Channel::Channel(EventLoop* loop, int fd__)
   : loop_(loop),

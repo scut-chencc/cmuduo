@@ -102,7 +102,6 @@ void EventLoop::loop()
     {
       currentActiveChannel_ = *it;
       currentActiveChannel_->handleEvent(pollReturnTime_);
-	  currentActiveChannel_->handleEvent(pollReturnTime_);
     }
     currentActiveChannel_ = NULL;
     eventHandling_ = false;
